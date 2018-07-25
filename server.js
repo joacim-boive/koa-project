@@ -1,28 +1,30 @@
 const Koa = require('koa');
 const convert = require('koa-connect');
-const proxy = require('http-proxy-middleware');
 
 const app = new Koa();
 
-app.use((convert(proxy({
-    target: 'https://www.ecster.se',
+app.use((convert(proxy('/rest/', {
+    target: 'https://secure5.ft.ecster.se',
     changeOrigin: true,
-    secure: true,
+    secure: false,
     logLevel: 'debug',
-    headers:{
-        'my-header': 'this is my header'
+    pathRewrite:{
+        '^/rest/': '/rest/sessions/v1/'
     },
     onClose: (res, socket, head) =>{
-      console.info('Proxy closed!');
+        console.info('Proxy closed!');
     },
     onError: (err, req, res) => {
         console.error(err.message);
     },
     onProxyRes: (proxyRes, req, res) => {
+        debugger;
         proxyRes.headers['x-onProxyRes'] = 'response';
     },
     onProxyReq: (proxyReq, req, res) => {
-        proxyReq.setHeader('x-onProxyReq', 'request');
+        debugger;
+        proxyReq.setHeader('X-ECSTER-Origin', 'mypages');
+        proxyReq.setHeader('Content-Type', 'application/json');
     },
 
 }))));
